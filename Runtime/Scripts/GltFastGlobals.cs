@@ -14,12 +14,13 @@
 //
 
 namespace GLTFast {
-    
+
     enum ImageFormat {
         Unknown,
         PNG,
         Jpeg,
-        KTX
+        KTX,
+        Basis
     }
 
 }
