@@ -40,9 +40,9 @@ namespace GLTFast.Materials {
             SpecularGlossiness,
             Unlit,
         }
-        
+
         public const string KW_UV_ROTATION = "_UV_ROTATION";
-        
+
         public static readonly int bumpMapPropId = Shader.PropertyToID("_BumpMap");
         public static readonly int bumpScalePropId = Shader.PropertyToID("_BumpScale");
         public static readonly int cutoffPropId = Shader.PropertyToID("_Cutoff");
@@ -58,9 +58,9 @@ namespace GLTFast.Materials {
         public static readonly int specGlossMapPropId = Shader.PropertyToID("_SpecGlossMap");
 
         const string ERROR_MULTI_UVS = "Multiple UV sets are not supported!";
-        
+
         static IMaterialGenerator defaultMaterialGenerator;
-        
+
         public static IMaterialGenerator GetDefaultMaterialGenerator() {
 
             if (defaultMaterialGenerator != null) return defaultMaterialGenerator;
@@ -139,7 +139,7 @@ namespace GLTFast.Materials {
                             Debug.LogError(ERROR_MULTI_UVS);
                         }
                         material.SetTexture(propertyId,img);
-                        var isKtx = txt.isKtx;
+                        var isKtx = txt.isKtx | true;
                         TrySetTextureTransform(textureInfo,material,propertyId,isKtx);
                         return true;
                     }
@@ -155,7 +155,7 @@ namespace GLTFast.Materials {
             }
             return false;
         }
-        
+
         protected static bool DifferentIndex(Schema.TextureInfo a, Schema.TextureInfo b) {
             return a != null && b != null && a.index>=0 && b.index>=0 && a.index != b.index;
         }
@@ -200,7 +200,7 @@ namespace GLTFast.Materials {
                     textureST.y *= cos;
 
                     material.EnableKeyword(KW_UV_ROTATION);
-                    textureST.z -= newRot.y; // move offset to move rotation point (horizontally) 
+                    textureST.z -= newRot.y; // move offset to move rotation point (horizontally)
                 }
 
                 textureST.w -= textureST.y * cos; // move offset to move flip axis point (vertically)
@@ -210,7 +210,7 @@ namespace GLTFast.Materials {
                 textureST.z = 1-textureST.z; // flip offset in Y
                 textureST.y = -textureST.y; // flip scale in Y
             }
-            
+
             if(material.HasProperty(mainTexPropId)) {
                 material.SetTextureOffset(mainTexPropId, textureST.zw);
                 material.SetTextureScale(mainTexPropId, textureST.xy);
@@ -219,7 +219,7 @@ namespace GLTFast.Materials {
             material.SetTextureScale(propertyId, textureST.xy);
             material.SetVector(mainTexScaleTransform, textureST);
         }
-        
+
         /// <summary>
         /// Approximates Transmission material effect for Render Pipelines / Shaders where filtering the
         /// backbuffer is not possible.
@@ -244,7 +244,7 @@ namespace GLTFast.Materials {
                 // Shows at least some color tinting
                 baseColorLinear.a *= 1 - transmission.transmissionFactor * 0.5f;
 
-                // Premultiply color? Decided not to. I prefered vivid (but too bright) colors over desaturation effect. 
+                // Premultiply color? Decided not to. I prefered vivid (but too bright) colors over desaturation effect.
                 // baseColorLinear.r *= baseColorLinear.a;
                 // baseColorLinear.g *= baseColorLinear.a;
                 // baseColorLinear.b *= baseColorLinear.a;
