@@ -1442,6 +1442,7 @@ namespace GLTFast {
 #endif // KTX_UNITY
                         } else if(imgFormat == ImageFormat.Basis) {
 #if KTX_UNITY
+                            Debug.LogWarning("GltfFast:CreateTexturesFromBuffers FILE is using BasisUniversal !!! Convert to KTX2 !!!");
                             Profiler.BeginSample("CreateTexturesFromBuffers.BasisUniversalLoadNativeContext");
                             if(basisLoadContextsBuffer==null) {
                                 basisLoadContextsBuffer = new List<BasisUniversalLoadContextBase>();
