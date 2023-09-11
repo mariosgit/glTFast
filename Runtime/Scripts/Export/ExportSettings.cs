@@ -15,12 +15,14 @@
 
 using UnityEngine;
 
-namespace GLTFast.Export {
-    
+namespace GLTFast.Export
+{
+
     /// <summary>
     /// glTF format
     /// </summary>
-    public enum GltfFormat {
+    public enum GltfFormat
+    {
         /// <summary>
         /// JSON-based glTF (.gltf file extension)
         /// </summary>
@@ -30,11 +32,12 @@ namespace GLTFast.Export {
         /// </summary>
         Binary
     }
-    
+
     /// <summary>
     /// Destination for image files
     /// </summary>
-    public enum ImageDestination {
+    public enum ImageDestination
+    {
         /// <summary>
         /// Automatic decision. Main buffer for glTF-binary, separate files for JSON-based glTFs.
         /// </summary>
@@ -52,7 +55,8 @@ namespace GLTFast.Export {
     /// <summary>
     /// Resolutions to existing file conflicts
     /// </summary>
-    public enum FileConflictResolution {
+    public enum FileConflictResolution
+    {
         /// <summary>
         /// Abort and keep existing files
         /// </summary>
@@ -62,32 +66,33 @@ namespace GLTFast.Export {
         /// </summary>
         Overwrite
     }
-    
+
     /// <summary>
     /// glTF export settings
     /// </summary>
-    public class ExportSettings {
+    public class ExportSettings
+    {
         /// <summary>
         /// Export to JSON-based or binary format glTF files
         /// </summary>
-        public GltfFormat format = GltfFormat.Json;
-        
-        /// <inheritdoc cref="ImageDestination"/>
-        public ImageDestination imageDestination = ImageDestination.Automatic;
-        
-        /// <inheritdoc cref="FileConflictResolution"/>
-        public FileConflictResolution fileConflictResolution = FileConflictResolution.Abort;
-        
+        public GltfFormat Format { get; set; } = GltfFormat.Json;
+
+        /// <inheritdoc cref="Export.ImageDestination"/>
+        public ImageDestination ImageDestination { get; set; } = ImageDestination.Automatic;
+
+        /// <inheritdoc cref="Export.FileConflictResolution"/>
+        public FileConflictResolution FileConflictResolution { get; set; } = FileConflictResolution.Abort;
+
         /// <summary>
         /// Light intensity values are multiplied by this factor.
         /// </summary>
-        [Tooltip("Light intensity values are multiplied by this factor")]
-        public float lightIntensityFactor = 1.0f;
+        [field: Tooltip("Light intensity values are multiplied by this factor")]
+        public float LightIntensityFactor { get; set; } = 1.0f;
 
         /// <summary>
         /// Component type flags to include or exclude components from export
-        /// based on type. 
+        /// based on type.
         /// </summary>
-        public ComponentType componentMask = ComponentType.All;
+        public ComponentType ComponentMask { get; set; } = ComponentType.All;
     }
 }

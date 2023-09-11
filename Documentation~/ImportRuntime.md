@@ -6,7 +6,7 @@ You can load a glTF asset from an URL or a file path.
 
 ## Runtime Loading via Component
 
-Add a `GltfAsset` component to a GameObject.
+Add a `GltfAsset` component to a GameObject. It offers a lot of settings for import and instantiation.
 
 ![GltfAsset component][gltfasset_component]
 
@@ -14,7 +14,7 @@ Add a `GltfAsset` component to a GameObject.
 
 ```C#
 var gltf = gameObject.AddComponent<GLTFast.GltfAsset>();
-gltf.url = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf";
+gltf.Url = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf";
 ```
 
 ### Load from byte array
@@ -57,21 +57,22 @@ Loading via script allows you to:
 `GltfImport.Load` accepts an optional instance of [`ImportSettings`][ImportSettings] as parameter. Have a look at this class to see all options available. Here's an example usage:
 
 ```C#
-async void Start() {
+async void Start()
+{
     var gltf = new GLTFast.GltfImport();
 
     // Create a settings object and configure it accordingly
     var settings = new ImportSettings {
-        generateMipMaps = true,
-        anisotropicFilterLevel = 3,
-        nodeNameMethod = ImportSettings.NameImportMethod.OriginalUnique
+        GenerateMipMaps = true,
+        AnisotropicFilterLevel = 3,
+        NodeNameMethod = NameImportMethod.OriginalUnique
     };
-    
     // Load the glTF and pass along the settings
     var success = await gltf.Load("file:///path/to/file.gltf", settings);
 
     if (success) {
-        success = await gltf.InstantiateMainSceneAsync(new GameObject("glTF").transform);
+        var gameObject = new GameObject("glTF");
+        await gltf.InstantiateMainSceneAsync(gameObject.transform);
     }
     else {
         Debug.LogError("Loading glTF failed!");
@@ -102,7 +103,7 @@ async void Start() {
         await gltf.InstantiateMainSceneAsync( new GameObject("Instance 2").transform );
 
         // Instantiate each of the glTF's scenes
-        for (int sceneId = 0; sceneId < gltf.sceneCount; sceneId++) {
+        for (int sceneId = 0; sceneId < gltf.SceneCount; sceneId++) {
             await gltf.InstantiateSceneAsync(transform, sceneId);
         }
     } else {
@@ -113,9 +114,9 @@ async void Start() {
 
 ### Instantiation
 
-Creating actual GameObjects (or Entities) from the imported data (Meshes, Materials) is called instantiation.
+Creating actual GameObjects (or Entities) from the imported data (nodes, meshes, materials) is called instantiation.
 
-You can customize it by providing an implementation of [`IInstantiator`][IInstantiator] ( see [source][IInstantiator] and the reference implementation [`GameObjectInstantiator`][GameObjectInstantiator] for details).
+You can customize it by providing an implementation of [`IInstantiator`][IInstantiator] (see [source][IInstantiator] and the reference implementation [`GameObjectInstantiator`][GameObjectInstantiator] for details).
 
 Inject your custom instantiation like so
 
@@ -131,23 +132,23 @@ public class YourCustomInstantiator : GLTFast.IInstantiator {
 
 #### GameObjectInstantiator Setup
 
-The [`GameObjectInstantiator`][GameObjectInstantiator] accepts settings (via the constructor's `settings` parameter).
+The [`GameObjectInstantiator`][GameObjectInstantiator] accepts [InstantiationSettings][InstantiationSettings]) via the constructor's `settings` parameter.
 
-##### `skinUpdateWhenOffscreen`
+##### `SkinUpdateWhenOffscreen`
 
 Meshes that are skinned or have morph targets and are animated might move way outside their initial bounding box and thus break the culling. To prevent this the `SkinnedMeshRenderer`'s *Update When Offscreen* property is enabled by default. This comes at a runtime performance cost (see [Determining a GameObject’s visibility](https://docs.unity3d.com/2021.2/Documentation/Manual/class-SkinnedMeshRenderer.html) from the documentation).
 
-You can disable this by setting `skinUpdateWhenOffscreen` to false.
+You can disable this by setting `SkinUpdateWhenOffscreen` to false.
 
-##### `layer`
+##### `Layer`
 
 Instantated `GameObject`s will be assigned to this [layer](https://docs.unity3d.com/Manual/Layers.html).
 
-##### `mask`
+##### `Mask`
 
 Allows you to filter components based on types (e.g. Meshes, Animation, Cameras or Lights).
 
-##### `lightIntensityFactor`
+##### `LightIntensityFactor`
 
 Whenever glTF lights appear too bright or dim, you can use this setting to adjust their intensity, which are multiplied by this factor.
 
@@ -156,7 +157,15 @@ Two common use-cases are
 1. Scale-down (physically correct) intensities to compensate for the missing exposure control (or high sensitivity) of a render pipeline (e.g. Universal or Built-in Render Pipeline)
 2. Boost implausibly low light intensities
 
-See [Physical Light Units in glTF](./LightUnitys.md) for a detailed explaination.
+See [Physical Light Units in glTF](./LightUnits.md) for a detailed explaination.
+
+##### `SceneObjectCreation`
+
+Determines whether a dedicated GameObject/Entity representing the scene should get created (or the provided root `Transform` is used as scene root; see [SceneObjectCreation][SceneObjectCreation]).
+
+- `Always`: Create a dedicated scene root GameObject/Entity
+- `Never`: Always use the provided `Transform` as scene root.
+- `WhenMultipleRootNodes`: Create a scene object only if there is more than one root level node.
 
 #### Instance Access
 
@@ -166,34 +175,35 @@ After a glTF scene was instanced, you can access selected components for further
 - Cameras
 - Lights
 
-[`GameObjectInstantiator`][GameObjectInstantiator] provides a [`SceneInstance`][SceneInstance] for that purpose. Here's some code that demonstrates how to access it
+[`GameObjectInstantiator`][GameObjectInstantiator] provides a [`SceneInstance`][GameObjectSceneInstance] for that purpose. Here's some code that demonstrates how to access it
 
 ```csharp
-async void Start() {
+async void Start()
+{
 
     var gltfImport = new GltfImport();
     await gltfImport.Load("test.gltf");
     var instantiator = new GameObjectInstantiator(gltfImport,transform);
     var success = await gltfImport.InstantiateMainSceneAsync(instantiator);
     if (success) {
-        
+    
         // Get the SceneInstance to access the instance's properties
-        var sceneInstance = instantiator.sceneInstance;
+        var sceneInstance = instantiator.SceneInstance;
 
         // Enable the first imported camera (which are disabled by default)
-        if (sceneInstance.cameras is { Count: > 0 }) {
-            sceneInstance.cameras[0].enabled = true;
+        if (sceneInstance.Cameras is { Count: > 0 }) {
+            sceneInstance.Cameras[0].enabled = true;
         }
-        
+    
         // Decrease lights' ranges
-        if (sceneInstance.lights != null) {
-            foreach (var glTFLight in sceneInstance.lights) {
+        if (sceneInstance.Lights != null) {
+            foreach (var glTFLight in sceneInstance.Lights) {
                 glTFLight.range *= 0.1f;
             }
         }
-        
+    
         // Play the default (i.e. the first) animation clip
-        var legacyAnimation = instantiator.sceneInstance.legacyAnimation;
+        var legacyAnimation = instantiator.SceneInstance.LegacyAnimation;
         if (legacyAnimation != null) {
             legacyAnimation.Play();
         }
@@ -215,7 +225,7 @@ You can customize logging by providing an implementation of [`ICodeLogger`][ICod
 
 There are two common implementations bundled. The `ConsoleLogger`, which logs straight to console (the default) and `CollectingLogger`, which stores messages in a list for users to process.
 
-Look into [`ICodeLogger`][ICodeLogger] and [`LogMessages`][[LogMessages]] for details.
+Look into [`ICodeLogger`][ICodeLogger] and [`LogMessages`][LogMessages] for details.
 
 ### Tune loading performance
 
@@ -270,6 +280,12 @@ async Task CustomDeferAgentPerGltfImport() {
 
 > Note2 : Using the `TimeBudgetPerFrameDeferAgent` does **not** guarantee a stutter free frame rate. This is because some sub tasks of the loading routine (like uploading a texture to the GPU) may take too long, cannot be interrupted and **have** to be done on the main thread.
 
+### Disposing Resources
+
+When you no longer need a loaded instance of a glTF scene you might want to remove it and free up all its resources (mainly memory). For that purpose [`GltfImport`][GltfImport] implements `IDisposable`. Calling [`GltfImport.Dispose`][GltfImportDispose] will destroy all its resources, regardless whether there's still an instance that might references them.
+
+[GltfImport]: xref:GLTFast.GltfImport
+[GltfImportDispose]: xref:GLTFast.GltfImport.Dispose
 [GameObjectInstantiator]: xref:GLTFast.GameObjectInstantiator
 [gltfasset_component]: Images/gltfasset_component.png  "Inspector showing a GltfAsset component added to a GameObject"
 [ICodeLogger]: xref:GLTFast.Logging.ICodeLogger
@@ -277,5 +293,7 @@ async Task CustomDeferAgentPerGltfImport() {
 [IInstantiator]: xref:GLTFast.IInstantiator
 [IMaterialGenerator]: xref:GLTFast.Materials.IMaterialGenerator
 [ImportSettings]: xref:GLTFast.ImportSettings
+[InstantiationSettings]: xref:GLTFast.InstantiationSettings
 [LogMessages]: xref:GLTFast.Logging.LogMessages
-[SceneInstance]: xref:GLTFast.GameObjectInstantiator.SceneInstance
+[GameObjectSceneInstance]: xref:GLTFast.GameObjectSceneInstance
+[SceneObjectCreation]: xref:GLTFast.SceneObjectCreation

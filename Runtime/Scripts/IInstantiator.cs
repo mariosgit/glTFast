@@ -1,4 +1,4 @@
-﻿// Copyright 2020-2022 Andreas Atteneder
+// Copyright 2020-2022 Andreas Atteneder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +16,17 @@
 using Unity.Collections;
 using UnityEngine;
 
-namespace GLTFast {
-    
+namespace GLTFast
+{
+
     /// <summary>
     /// After parsing and loading a glTF's content and converting its content
     /// into Unity resources,the second step is instantiation.
     /// Implementors of this interface can convert glTF resources into scene
-    /// objects. 
+    /// objects.
     /// </summary>
-    public interface IInstantiator {
+    public interface IInstantiator
+    {
 
         /// <summary>
         /// Starts creating a scene instance.
@@ -33,14 +35,19 @@ namespace GLTFast {
         /// </summary>
         /// <param name="name">Name of the scene</param>
         /// <param name="rootNodeIndices">Indices of root level nodes in scene</param>
-        /// <param name="animationClips">Animation clips</param>
         void BeginScene(
             string name
-            ,uint[] rootNodeIndices
-#if UNITY_ANIMATION
-            ,AnimationClip[] animationClips
-#endif
+            , uint[] rootNodeIndices
         );
+
+#if UNITY_ANIMATION
+        /// <summary>
+        /// Adds animation clips to the current scene.
+        /// Only available if the built-in Animation module is enabled.
+        /// </summary>
+        /// <param name="animationClips">Animation clips</param>
+        void AddAnimation(AnimationClip[] animationClips);
+#endif
 
         /// <summary>
         /// Called for every Node in the glTF file
@@ -135,11 +142,11 @@ namespace GLTFast {
             uint nodeIndex,
             uint lightIndex
         );
-        
+
         /// <summary>
         /// Is called at last, after all scene content has been created.
         /// Immediately afterwards the scene will be rendered, so use it to
-        /// finally prepare the instance. 
+        /// finally prepare the instance.
         /// </summary>
         /// <param name="rootNodeIndices">Indices of root level nodes in scene</param>
         void EndScene(

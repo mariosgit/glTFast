@@ -1,4 +1,4 @@
-﻿// Copyright 2020-2022 Andreas Atteneder
+// Copyright 2020-2022 Andreas Atteneder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
 
-namespace GLTFast.Logging {
+namespace GLTFast.Logging
+{
 
     /// <summary>
     /// Predefined message code
     /// </summary>
-    public enum LogCode : uint {
+    public enum LogCode : uint
+    {
         /// <summary>
         /// No or unknown log code.
         /// </summary>
@@ -47,7 +49,7 @@ namespace GLTFast.Logging {
         /// </summary>
         AccessorsShared,
         /// <summary>
-        /// Animation channel has invalid node id 
+        /// Animation channel has invalid node id
         /// </summary>
         AnimationChannelNodeInvalid,
         /// <summary>
@@ -91,7 +93,7 @@ namespace GLTFast.Logging {
         /// </summary>
         Download,
         /// <summary>
-        /// Loading embed buffer failed 
+        /// Loading embed buffer failed
         /// </summary>
         EmbedBufferLoadFailed,
         /// <summary>
@@ -99,35 +101,35 @@ namespace GLTFast.Logging {
         /// </summary>
         EmbedImageInconsistentType,
         /// <summary>
-        /// Loading embedded image failed 
+        /// Loading embedded image failed
         /// </summary>
         EmbedImageLoadFailed,
         /// <summary>
-        /// Unsupported embed image format 
+        /// Unsupported embed image format
         /// </summary>
         EmbedImageUnsupportedType,
         /// <summary>
-        /// JSON embed buffers are slow! consider using glTF binary 
+        /// JSON embed buffers are slow! consider using glTF binary
         /// </summary>
         EmbedSlow,
         /// <summary>
-        /// glTF extension is not supported 
+        /// glTF extension is not supported
         /// </summary>
         ExtensionUnsupported,
         /// <summary>
-        /// Image could not get exported 
+        /// Image could not get exported
         /// </summary>
         ExportImageFailed,
         /// <summary>
-        /// Not a glTF-binary file 
+        /// Not a glTF-binary file
         /// </summary>
         GltfNotBinary,
         /// <summary>
-        /// Unsupported glTF version 
+        /// Unsupported glTF version
         /// </summary>
         GltfUnsupportedVersion,
         /// <summary>
-        /// Invalid hierarchy 
+        /// Invalid hierarchy
         /// </summary>
         HierarchyInvalid,
         /// <summary>
@@ -135,37 +137,37 @@ namespace GLTFast.Logging {
         /// </summary>
         ImageConversionNotEnabled,
         /// <summary>
-        /// Unknown image format 
+        /// Unknown image format
         /// </summary>
         ImageFormatUnknown,
         /// <summary>
-        /// Have to create copy of image {0} due to different samplers. This is harmless, but requires more memory. 
+        /// Have to create copy of image {0} due to different samplers. This is harmless, but requires more memory.
         /// </summary>
         ImageMultipleSamplers,
         /// <summary>
-        /// Invalid index format 
+        /// Invalid index format
         /// </summary>
         IndexFormatInvalid,
         /// <summary>
-        /// Parsing JSON failed 
+        /// Parsing JSON failed
         /// </summary>
         JsonParsingFailed,
         /// <summary>
         /// Chance of incorrect materials! glTF transmission is approximated
-        /// when using built-in render pipeline! 
+        /// when using built-in render pipeline!
         /// </summary>
         MaterialTransmissionApprox,
         /// <summary>
         /// Chance of incorrect materials! glTF transmission is approximated.
         /// Enable Opaque Texture access in Universal Render Pipeline!
         /// </summary>
-        MaterialTransmissionApproxURP,
+        MaterialTransmissionApproxUrp,
         /// <summary>
-        /// No bounds for mesh {0} => calculating them. 
+        /// No bounds for mesh {0} => calculating them.
         /// </summary>
         MeshBoundsMissing,
         /// <summary>
-        /// Skipping non-readable mesh 
+        /// Skipping non-readable mesh
         /// </summary>
         MeshNotReadable,
         /// <summary>
@@ -233,6 +235,10 @@ namespace GLTFast.Logging {
         /// </summary>
         TypeUnsupported,
         /// <summary>
+        /// Support for direct Jpeg/PNG texture download is not enabled
+        /// </summary>
+        UnityWebRequestTextureNotEnabled,
+        /// <summary>
         /// Only eight UV sets will get imported
         /// </summary>
         UVLimit,
@@ -241,12 +247,15 @@ namespace GLTFast.Logging {
         /// </summary>
         UVMulti,
     }
-    
+
     /// <summary>
     /// Converts <seealso cref="LogCode"/> to human readable and understandable message string.
     /// </summary>
-    public static class LogMessages {
+    public static class LogMessages
+    {
 #if GLTFAST_REPORT
+        static readonly string k_LinkProjectSetupTextureSupport = $"See {GltfGlobals.GltfPackageName}/Documentation~/ProjectSetup.md#texture-support for details.";
+
         static readonly Dictionary<LogCode, string> k_FullMessages = new Dictionary<LogCode, string>() {
             { LogCode.AccessorAttributeTypeUnknown, "Unknown GLTFAccessorAttributeType" },
             { LogCode.AccessorInconsistentUsage, "Inconsistent accessor usage {0} != {1}" },
@@ -274,23 +283,23 @@ See details in corresponding issue at https://github.com/atteneder/glTFast/issue
             { LogCode.GltfNotBinary, "Not a glTF-binary file" },
             { LogCode.GltfUnsupportedVersion, "Unsupported glTF version {0}" },
             { LogCode.HierarchyInvalid, "Invalid hierarchy" },
-            { LogCode.ImageConversionNotEnabled, "Jpeg/PNG textures failed because required built-in packages \"Image Conversion\"/\"Unity Web Request Texture\" are not enabled. See https://github.com/atteneder/glTFast/blob/main/Documentation~/ProjectSetup.md#texture-support for details." },
+            { LogCode.ImageConversionNotEnabled, $"Jpeg/PNG textures failed because required built-in packages \"Image Conversion\"/\"Unity Web Request Texture\" are not enabled. {k_LinkProjectSetupTextureSupport}" },
             { LogCode.ImageFormatUnknown, "Unknown image format (image {0};uri:{1})" },
             { LogCode.ImageMultipleSamplers, "Have to create copy of image {0} due to different samplers. This is harmless, but requires more memory." },
             { LogCode.IndexFormatInvalid, "Invalid index format {0}" },
             { LogCode.JsonParsingFailed, "Parsing JSON failed" },
             { LogCode.MaterialTransmissionApprox, "Chance of incorrect materials! glTF transmission is approximated when using built-in render pipeline!" },
-            { LogCode.MaterialTransmissionApproxURP, @"Chance of incorrect materials! glTF transmission
+            { LogCode.MaterialTransmissionApproxUrp, @"Chance of incorrect materials! glTF transmission
 is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             { LogCode.MeshBoundsMissing, "No bounds for mesh {0} => calculating them." },
             { LogCode.MeshNotReadable, "Skipping non-readable mesh {0}" },
             { LogCode.MissingImageURL, "Image URL missing" },
             { LogCode.MorphTargetContextFail, "Retrieving morph target failed" },
             { LogCode.NamingOverride, "Overriding naming method to be OriginalUnique (animation requirement)" },
-            { LogCode.PackageMissing, "{0} package needs to be installed in order to support glTF extension {1}!\nSee https://github.com/atteneder/glTFast#installing for instructions" },
+            { LogCode.PackageMissing, $"{{0}} package needs to be installed in order to support glTF extension {{1}}!\nSee {GltfGlobals.GltfPackageName}/README.md#installing for instructions" },
             { LogCode.PrimitiveModeUnsupported, "Primitive mode {0} is untested" },
             { LogCode.RemapUnsupported, "{0} remap is not fully supported" },
-            { LogCode.ShaderMissing, "Shader \"{0}\" is missing. Make sure to include it in the build (see https://github.com/atteneder/glTFast/blob/main/Documentation%7E/ProjectSetup.md#materials-and-shader-variants )" },
+            { LogCode.ShaderMissing, $"Shader \"{{0}}\" is missing. Make sure to include it in the build (see {GltfGlobals.GltfPackageName}/Documentation~/ProjectSetup.md#materials-and-shader-variants )" },
             { LogCode.SkinMissing, "Skin missing" },
             { LogCode.SparseAccessor, "Sparse Accessor not supported ({0})" },
             { LogCode.TextureDownloadFailed, "Download texture {1} failed: {0}" },
@@ -300,6 +309,7 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             { LogCode.TopologyPointsMaterialUnsupported, "Could not find material that supports points topology" },
             { LogCode.TopologyUnsupported, "Unsupported topology {0}" },
             { LogCode.TypeUnsupported, "Unsupported {0} type {1}" },
+            { LogCode.UnityWebRequestTextureNotEnabled, $"PNG/Jpeg textures load slower because built-in package \"Unity Web Request Texture\" is not enabled. {k_LinkProjectSetupTextureSupport}" },
             { LogCode.UVLimit, "Only eight UV sets will get imported" },
             { LogCode.UVMulti, "UV set index {0} is not supported in current render pipeline" },
         };
@@ -311,11 +321,15 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
         /// <param name="code">Input LogCode</param>
         /// <param name="messages">Additional message parts (te be filled into final message)</param>
         /// <returns>Human readable and understandable message string</returns>
-        public static string GetFullMessage(LogCode code, params string[] messages) {
-            if (code == LogCode.None) {
+        public static string GetFullMessage(LogCode code, params string[] messages)
+        {
+            if (code == LogCode.None)
+            {
                 var sb = new StringBuilder();
-                foreach (var message in messages) {
-                    if (sb.Length > 0) {
+                foreach (var message in messages)
+                {
+                    if (sb.Length > 0)
+                    {
                         sb.Append(";");
                     }
                     sb.Append(message);
@@ -324,14 +338,19 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
             }
 #if GLTFAST_REPORT
             return messages != null
+                // ReSharper disable once CoVariantArrayConversion
                 ? string.Format(k_FullMessages[code], messages)
                 : k_FullMessages[code];
 #else
-            if (messages == null) {
+            if (messages == null)
+            {
                 return code.ToString();
-            } else {
+            }
+            else
+            {
                 var sb = new StringBuilder(code.ToString());
-                foreach (var message in messages) {
+                foreach (var message in messages)
+                {
                     sb.Append(";");
                     sb.Append(message);
                 }
@@ -341,4 +360,3 @@ is approximated. Enable Opaque Texture access in Universal Render Pipeline!" },
         }
     }
 }
-

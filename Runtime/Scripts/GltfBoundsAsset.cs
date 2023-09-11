@@ -1,4 +1,4 @@
-﻿// Copyright 2020-2022 Andreas Atteneder
+// Copyright 2020-2022 Andreas Atteneder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,78 +27,96 @@ namespace GLTFast
     /// Base component for code-less loading of glTF files
     /// Extends <seealso cref="GltfAsset"/> with bounding box calculation
     /// </summary>
-    public class GltfBoundsAsset : GltfAsset {
-
+    public class GltfBoundsAsset : GltfAsset
+    {
         /// <summary>
-        /// If true, a box collider encapsulating the glTF asset is created
+        /// If true, a box collider encapsulating the glTF scene is created
+        /// (only if the built-in Physics module is enabled).
         /// </summary>
-        [Tooltip("If true, a box collider encapsulating the glTF asset is created")]
-        public bool createBoxCollider = true;
+        public bool CreateBoxCollider
+        {
+            get => createBoxCollider;
+            set => createBoxCollider = value;
+        }
 
         /// <summary>
         /// Bounding box of the instantiated glTF scene
         /// </summary>
-        [NonSerialized]
-        public Bounds bounds;
+        // ReSharper disable once MemberCanBePrivate.Global
+        public Bounds Bounds { get; private set; }
 
-        
+        [SerializeField]
+        [Tooltip("If true, a box collider encapsulating the glTF asset is created")]
+        bool createBoxCollider = true;
+
         /// <inheritdoc />
         public override async Task<bool> Load(
-            string url,
-            IDownloadProvider downloadProvider=null,
-            IDeferAgent deferAgent=null,
-            IMaterialGenerator materialGenerator=null,
+            string gltfUrl,
+            IDownloadProvider downloadProvider = null,
+            IDeferAgent deferAgent = null,
+            IMaterialGenerator materialGenerator = null,
             ICodeLogger logger = null
             )
         {
-            importer = new GltfImport(downloadProvider,deferAgent, materialGenerator);
-            var success = await importer.Load(url);
-            if(success) {
-                var insta = (GameObjectBoundsInstantiator) GetDefaultInstantiator(logger);
+            Importer = new GltfImport(downloadProvider, deferAgent, materialGenerator, logger);
+            var success = await Importer.Load(gltfUrl);
+            if (success)
+            {
+                var instantiator = (GameObjectBoundsInstantiator)GetDefaultInstantiator(logger);
                 // Auto-Instantiate
-                if (sceneId>=0) {
-                    success = await importer.InstantiateSceneAsync(insta, sceneId);
-                    currentSceneId = success ? sceneId : (int?)null;
-                } else {
-                    success = await importer.InstantiateMainSceneAsync(insta);
-                    currentSceneId = importer.defaultSceneIndex;
+                if (SceneId >= 0)
+                {
+                    success = await Importer.InstantiateSceneAsync(instantiator, SceneId);
+                    CurrentSceneId = success ? SceneId : (int?)null;
+                }
+                else
+                {
+                    success = await Importer.InstantiateMainSceneAsync(instantiator);
+                    CurrentSceneId = Importer.DefaultSceneIndex;
                 }
 
-                sceneInstance = insta.sceneInstance;
+                SceneInstance = instantiator.SceneInstance;
 
-                if(success) {
-                    SetBounds(insta);
+                if (success)
+                {
+                    SetBounds(instantiator);
                 }
             }
             return success;
         }
 
         /// <inheritdoc />
-        public override async Task<bool> InstantiateScene(int sceneIndex, ICodeLogger logger = null) {
+        public override async Task<bool> InstantiateScene(int sceneIndex, ICodeLogger logger = null)
+        {
             var instantiator = (GameObjectBoundsInstantiator)GetDefaultInstantiator(logger);
             var success = await base.InstantiateScene(sceneIndex, instantiator);
-            currentSceneId = success ? sceneIndex : (int?)null;
-            sceneInstance = instantiator.sceneInstance;
-            if (success) {
+            CurrentSceneId = success ? sceneIndex : (int?)null;
+            SceneInstance = instantiator.SceneInstance;
+            if (success)
+            {
                 SetBounds(instantiator);
             }
             return success;
         }
 
         /// <inheritdoc />
-        protected override IInstantiator GetDefaultInstantiator(ICodeLogger logger) {
-            return new GameObjectBoundsInstantiator(importer, transform, logger);
+        protected override IInstantiator GetDefaultInstantiator(ICodeLogger logger)
+        {
+            return new GameObjectBoundsInstantiator(Importer, transform, logger, InstantiationSettings);
         }
-        
-        void SetBounds(GameObjectBoundsInstantiator insta) {
-            var sceneBounds = insta.sceneInstance!=null ? insta.CalculateBounds() : null;
-            if (sceneBounds.HasValue) {
-                bounds = sceneBounds.Value;
-                if (createBoxCollider) {
+
+        void SetBounds(GameObjectBoundsInstantiator instantiator)
+        {
+            var sceneBounds = instantiator.SceneInstance != null ? instantiator.CalculateBounds() : null;
+            if (sceneBounds.HasValue)
+            {
+                Bounds = sceneBounds.Value;
+                if (createBoxCollider)
+                {
 #if UNITY_PHYSICS
                     var boxCollider = gameObject.AddComponent<BoxCollider>();
-                    boxCollider.center = bounds.center;
-                    boxCollider.size = bounds.size;
+                    boxCollider.center = Bounds.center;
+                    boxCollider.size = Bounds.size;
 #else
                     Debug.LogError("GltfBoundsAsset requires the built-in Physics package to be enabled (in the Package Manager)");
 #endif

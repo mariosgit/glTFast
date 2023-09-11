@@ -35,7 +35,7 @@ namespace GLTFast.Materials {
         }
 
         protected override void SetShaderModeBlend(Schema.Material gltfMaterial, Material material) {
-            material.EnableKeyword(KW_ALPHATEST_ON);
+            material.EnableKeyword(AlphaTestOnKeyword);
             material.EnableKeyword(k_SurfaceTypeTransparent);
             material.renderQueue = (int)RenderQueue.Transparent;
             material.SetFloat(k_DstBlendPropId, (int)BlendMode.OneMinusSrcAlpha);//10

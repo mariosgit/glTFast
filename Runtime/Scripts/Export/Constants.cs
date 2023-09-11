@@ -15,10 +15,12 @@
 
 using UnityEngine;
 
-namespace GLTFast.Export {
-    static class Constants {
-        public const string version = "5.0.0-exp.1";
-        
+namespace GLTFast.Export
+{
+    static class Constants
+    {
+        public const string version = "5.0.4";
+
         internal const string mimeTypePNG = "image/png";
         internal const string mimeTypeJPG = "image/jpeg";
     }

@@ -1,4 +1,4 @@
-﻿// Copyright 2020-2022 Andreas Atteneder
+// Copyright 2020-2022 Andreas Atteneder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,62 +16,78 @@
 using System;
 using UnityEngine;
 
-namespace GLTFast {
+namespace GLTFast
+{
 
     /// <summary>
     /// Instantiation settings
     /// </summary>
     [Serializable]
-    public class InstantiationSettings {
-        
+    public class InstantiationSettings
+    {
         /// <summary>
-        /// Scene object creation method. Determines whether or when a
-        /// GameObject/Entity representing the scene should get created.
+        /// Can be used to exclude component instantiation based on type.
         /// </summary>
-        public enum SceneObjectCreation {
-            /// <summary>
-            /// Never create a scene object.
-            /// </summary>
-            Never,
-            /// <summary>
-            /// Always create a scene object.
-            /// </summary>
-            Always,
-            /// <summary>
-            /// Create a scene object if there is more than one root level node.
-            /// Otherwise omit creating a scene object.
-            /// </summary>
-            WhenMultipleRootNodes
+        public ComponentType Mask
+        {
+            get => mask;
+            set => mask = value;
         }
-        
-        /// <summary>
-        /// Can be used to exclude component instantiation based on type. 
-        /// </summary>
-        [Tooltip("Filter component instantiation based on type")]
-        public ComponentType mask = ComponentType.All;
-        
+
         /// <summary>
         /// Instantiated objects will be assigned to this layer.
         /// </summary>
-        [Tooltip("Instantiated objects will be assigned to this layer")]
-        public int layer;
-        
+        public int Layer
+        {
+            get => layer;
+            set => layer = value;
+        }
+
         /// <summary>
         /// Corresponds to <see cref="SkinnedMeshRenderer.updateWhenOffscreen"/>
         /// When true, calculate the mesh bounds on every frame, even when
         /// the mesh is not visible.
         /// </summary>
-        [Tooltip("When checked, calculate the mesh bounds on every frame, even when the mesh is not visible")]
-        public bool skinUpdateWhenOffscreen = true;
-        
+        public bool SkinUpdateWhenOffscreen
+        {
+            get => skinUpdateWhenOffscreen;
+            set => skinUpdateWhenOffscreen = value;
+        }
+
         /// <summary>
         /// Light intensity values are multiplied by this factor.
         /// </summary>
-        [Tooltip("Light intensity values are multiplied by this factor")]
-        public float lightIntensityFactor = 1.0f;
+        public float LightIntensityFactor
+        {
+            get => lightIntensityFactor;
+            set => lightIntensityFactor = value;
+        }
 
-        /// <inheritdoc cref="SceneObjectCreation"/>
+        /// <inheritdoc cref="GLTFast.SceneObjectCreation"/>
+        public SceneObjectCreation SceneObjectCreation
+        {
+            get => sceneObjectCreation;
+            set => sceneObjectCreation = value;
+        }
+
+        [SerializeField]
+        [Tooltip("Filter component instantiation based on type")]
+        ComponentType mask = ComponentType.All;
+
+        [SerializeField]
+        [Tooltip("Instantiated objects will be assigned to this layer")]
+        int layer;
+
+        [SerializeField]
+        [Tooltip("When checked, calculate the mesh bounds on every frame, even when the mesh is not visible")]
+        bool skinUpdateWhenOffscreen = true;
+
+        [SerializeField]
+        [Tooltip("Light intensity values are multiplied by this factor")]
+        float lightIntensityFactor = 1.0f;
+
+        [SerializeField]
         [Tooltip("Scene object creation method. Determines whether or when a GameObject/Entity representing the scene should get created.")]
-        public SceneObjectCreation sceneObjectCreation = SceneObjectCreation.WhenMultipleRootNodes;
+        SceneObjectCreation sceneObjectCreation = SceneObjectCreation.WhenMultipleRootNodes;
     }
 }

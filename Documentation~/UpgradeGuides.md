@@ -4,7 +4,50 @@ uid: doc-upgrade-guides
 
 # Upgrade Guides
 
+These guides will help you upgrade your project to use the latest version of glTFast. If you still encounter problems, help us improving this guide and glTFast in general by reaching out by raising an issue.
+
 ## Upgrade to 5.0
+
+### General
+
+The API in general was changed considerably to conform closer to Unity's coding standard and the Microsoft's Framework Design Guidelines. If you have custom code, you likely need to update parts of it to the new API. Some notable items:
+
+- PascalCase on properties (first char is upper-case)
+- Removed direct access to fields (replaced by getter-property, where required)
+- More consistent naming of assemblies, namespaces, classes, constants, static members, etc.
+  - Renamed and moved classes/structs to different files.
+- Auto-formatted code for consistent line-endings and code look (a necessary, one-time evil; might be troublesome if you forked glTFast)
+
+If you have issues, please also go through the 5.0.0 changelog entry and feel free to reach out for support.
+
+### Moved or Renamed Types
+
+Some assemblies, classes, structs and enum types have been renamed or moved. Make sure you adopt your code approriately. All entries are within the `GLTFast` namespace.
+
+- Refactored Assembly Definitions
+  - `glTFastSchema` was merged into `glTFast` and thus removed
+  - `glTFastEditor` was renamed to `glTFast.Editor`
+  - `glTFastEditorTests` was renamed to `glTFast.Editor.Tests`
+- Moved logging related code into `GLTFast.Logging` namespace
+- Replaced `CollectingLogger.item` with `.Count` and `.Items` iterator
+- `GameObjectInstantiator.SceneInstance` is now `GameObjectSceneInstance`
+- `ImportSettings.NameImportMethod` is now `NameImportMethod`
+- Converted  `GameObjectInstantiator.Settings` to `InstantiationSettings`
+- `InstantiationSettings.SceneObjectCreation` is now `SceneObjectCreation`
+- Converted properties that were hiding conversion logic or caching into methods
+  - `Accessor`: `typeEnum` to `GetAttributeType`/`SetAttributeType`
+  - `BufferView`: `modeEnum` to `GetMode`
+  - `BufferView`: `filterEnum` to `GetFilter`
+  - `AnimationChannelTarget`: `pathEnum` to `GetPath`
+  - `AnimationSampler`: `interpolationEnum` to `GetInterpolationType`
+  - `Camera`: `typeEnum` to `GetCameraType`/`SetCameraType`
+  - `LightPunctual`: `typeEnum` to `GetLightType`/`SetLightType`
+  - `Material`: `alphaModeEnum` to `GetAlphaMode`/`SetAlphaMode`
+- `HttpHeader`'s properties are readonly now. A constructor was added as compensation.
+- Obsolete code that was finally removed
+  - `GltfImport.Destroy` (was renamed to `GltfImport.Dispose`)
+  - `GLTFast.GltFast` (was renamed to `GltfImport`)
+  - `GltfImport.InstantiateGltf` (was replaced by `InstantiateMainScene` and `InstantiateScene`)
 
 ### Async Scene Instantiation
 
@@ -40,6 +83,10 @@ async void Start() {
 }
 ```
 
+### `IInstantiator` Changes
+
+`IInstantiator.BeginScene` signature dropped third parameter `AnimationClip[] animationClips`. As replacement `IInstantiator.AddAnimation` was added. It's only available when built-in Animation module is enabled.
+
 ### Texture Support
 
 The built-in packages [*Unity Web Request Texture*][uwrt] and [*Image Conversion*][ImgConv] provide support for PNG/Jpeg texture import and export. They are not a hard requirement anymore, so you…
@@ -59,7 +106,7 @@ There's a new property `Play Automatically`, which is checked by default. You sh
 
 #### Play Automatically when loading from script
 
-You have to explicitely use a [`GameObjectInstantiator`][GameObjectInstantiator]. It provides a [`SceneInstance`][SceneInstance] object which has a `legacyAnimation` property, referencing the `Animation` component. Use it to start or stop playback of any of the animation clips it holds.
+You have to explicitely use a [`GameObjectInstantiator`][GameObjectInstantiator]. It provides a [`SceneInstance`][GameObjectSceneInstance] object which has a `legacyAnimation` property, referencing the `Animation` component. Use it to start or stop playback of any of the animation clips it holds.
 
 ```csharp
 async void Start() {
@@ -71,10 +118,10 @@ async void Start() {
     if (success) {
         
         // Get the SceneInstance to access the instance's properties
-        var sceneInstance = instantiator.sceneInstance;
+        var sceneInstance = instantiator.SceneInstance;
 
         // Play the default (i.e. the first) animation clip
-        var legacyAnimation = instantiator.sceneInstance.legacyAnimation;
+        var legacyAnimation = instantiator.SceneInstance.LegacyAnimation;
         if (legacyAnimation != null) {
             legacyAnimation.Play();
         }
@@ -97,7 +144,7 @@ If a material is used on mesh primitives with different draw modes (e.g. on tria
 
 ### Misc. API Changes
 
-`RenderPipelineUtils.DetectRenderPipeline()` turned to `RenderPipelineUtils.renderPipeline`
+`RenderPipelineUtils.DetectRenderPipeline()` turned to `RenderPipelineUtils.RenderPipeline`
 
 ## Upgrade to 4.5
 
@@ -179,5 +226,5 @@ Users of glTFast 1.x can read [the documentation for it](./gltfast-1.md).
 [GltfImport]: xref:GLTFast.GltfImport
 [IGltfReadable]: xref:GLTFast.IGltfReadable
 [ImgConv]: https://docs.unity3d.com/2021.3/Documentation/ScriptReference/UnityEngine.ImageConversionModule.html
-[SceneInstance]: xref:GLTFast.GameObjectInstantiator.SceneInstance
+[GameObjectSceneInstance]: xref:GLTFast.GameObjectSceneInstance
 [uwrt]: https://docs.unity3d.com/2021.3/Documentation/ScriptReference/UnityEngine.UnityWebRequestTextureModule.html

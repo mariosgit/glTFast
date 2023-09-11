@@ -1,4 +1,4 @@
-﻿// Copyright 2020-2022 Andreas Atteneder
+// Copyright 2020-2022 Andreas Atteneder
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,16 +16,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GLTFast {
+namespace GLTFast
+{
 
     using Logging;
-    
-    /// <summary>
-    /// Generates a GameObject hierarchy from a glTF scene and provides its bounding box 
-    /// </summary>
-    public class GameObjectBoundsInstantiator : GameObjectInstantiator {
 
-        Dictionary<uint, Bounds> nodeBounds;
+    /// <summary>
+    /// Generates a GameObject hierarchy from a glTF scene and provides its bounding box
+    /// </summary>
+    public class GameObjectBoundsInstantiator : GameObjectInstantiator
+    {
+
+        Dictionary<uint, Bounds> m_NodeBounds;
 
         /// <inheritdoc />
         public GameObjectBoundsInstantiator(
@@ -33,25 +35,19 @@ namespace GLTFast {
             Transform parent,
             ICodeLogger logger = null,
             InstantiationSettings settings = null
-            ) : base(gltf,parent,logger,settings) {}
-        
+            ) : base(gltf, parent, logger, settings) { }
+
         /// <inheritdoc />
         public override void BeginScene(
             string name,
             uint[] rootNodeIndices
-#if UNITY_ANIMATION
-            ,AnimationClip[] animationClips
-#endif
-            ) 
+            )
         {
             base.BeginScene(
-				name,
-				rootNodeIndices
-#if UNITY_ANIMATION
-				,animationClips
-#endif
-				);
-            nodeBounds = new Dictionary<uint, Bounds>();
+                name,
+                rootNodeIndices
+                );
+            m_NodeBounds = new Dictionary<uint, Bounds>();
         }
 
         /// <inheritdoc />
@@ -64,7 +60,8 @@ namespace GLTFast {
             uint? rootJoint = null,
             float[] morphTargetWeights = null,
             int primitiveNumeration = 0
-        ) {
+        )
+        {
             base.AddPrimitive(
                 nodeIndex,
                 meshName,
@@ -76,14 +73,17 @@ namespace GLTFast {
                 primitiveNumeration
             );
 
-            if (nodeBounds!=null) {
-                var meshBounds = GetTransformedBounds(mesh.bounds, nodes[nodeIndex].transform.localToWorldMatrix);
-                if (nodeBounds.TryGetValue(nodeIndex,out var prevBounds)) {
+            if (m_NodeBounds != null)
+            {
+                var meshBounds = GetTransformedBounds(mesh.bounds, m_Parent.worldToLocalMatrix * m_Nodes[nodeIndex].transform.localToWorldMatrix);
+                if (m_NodeBounds.TryGetValue(nodeIndex, out var prevBounds))
+                {
                     meshBounds.Encapsulate(prevBounds);
-                    nodeBounds[nodeIndex] = meshBounds;
+                    m_NodeBounds[nodeIndex] = meshBounds;
                 }
-                else {
-                    nodeBounds[nodeIndex] = meshBounds;
+                else
+                {
+                    m_NodeBounds[nodeIndex] = meshBounds;
                 }
             }
         }
@@ -92,17 +92,22 @@ namespace GLTFast {
         /// Attempts to calculate the instance's bounds
         /// </summary>
         /// <returns>Instance's bounds, if calculation succeeded</returns>
-        public Bounds? CalculateBounds() {
+        public Bounds? CalculateBounds()
+        {
 
-            if (nodeBounds == null) { return null; }
+            if (m_NodeBounds == null) { return null; }
 
             var sceneBoundsSet = false;
             var sceneBounds = new Bounds();
-            
-            foreach (var nodeBound in nodeBounds.Values) {
-                if (sceneBoundsSet) {
+
+            foreach (var nodeBound in m_NodeBounds.Values)
+            {
+                if (sceneBoundsSet)
+                {
                     sceneBounds.Encapsulate(nodeBound);
-                } else {
+                }
+                else
+                {
                     sceneBounds = nodeBound;
                     sceneBoundsSet = true;
                 }
@@ -110,7 +115,7 @@ namespace GLTFast {
 
             return sceneBoundsSet ? sceneBounds : (Bounds?)null;
         }
-        
+
         static Bounds GetTransformedBounds(Bounds b, Matrix4x4 transform)
         {
             var corners = new Vector3[8];

@@ -4,18 +4,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.0.4] - 2023-03-30
+### Fixed
+- Texture transform offset is calculated correctly now
+
+## [5.0.3] - 2023-03-29
+### Fixed
+- Update licensing (internal only)
+
+## [5.0.2] - 2023-03-03
+### Fixed
+- Define constraints for KTX package (internal only)
+
+## [5.0.1] - 2023-03-02
+### Changed
+- (Export) Texture coordinates are now flipped vertically, similar to how it's performed at import. This ensures round-trip consistency (#342).
+### Fixed
+- (Export) Invalid blend indices or blend weights are not exported anymore (as skinning is not supported yet; #556)
+- Compiler error when using .NET Framework on 2021.3 and newer (#550)
+- `GltfBoundsAsset`'s instantiation settings are applied now
+- `GltfBoundsAsset`'s `BoxCollider` is positioned correctly, even if GameObject is not at scene origin (#565)
+
+## [5.0.0] - 2022-12-09
 This release contains multiple breaking changes. Please read the [upgrade guide](xref:doc-upgrade-guides#upgrade-to-50) for details.
 ### Added
 - `settings` parameter to `GameObjectBoundsInstantiator`'s constructor
 - (Import) Support for lights via KHR_lights_punctual extension (#17)
-- (Import) Exclude/include certain features (e.g. camera, animation, lights) via `InstantiationSettings.mask` (of type `ComponentType`)
+- (Import) Exclude/include certain features (e.g. camera, animation, lights) via `InstantiationSettings.Mask` (of type `ComponentType`)
 - DOTS instantiation settings support
 - (Import) Additional load methods in `GltfImport` (#409)
   - `Load` override to load from a `byte[]`
   - `LoadFile` to load from local files
   - `LoadGltfJson` to load a glTF JSON from string
-- (Import) `sceneObjectCreation` instantiation setting. It controls whether/when a GameObject/Entity should be created for the scene. Options: `Always`, `Never`, `WhenSingleRootNode`. (#320)
+- (Import) `SceneObjectCreation` instantiation setting. It controls whether/when a GameObject/Entity should be created for the scene. Options: `Always`, `Never`, `WhenSingleRootNode`. (#320)
 - (Import) Design-time import inspector now offers many more settings (feature parity with run-time settings)
 - Extended access to `IGltfReadable`
   - `GetSourceRoot`
@@ -30,17 +51,24 @@ This release contains multiple breaking changes. Please read the [upgrade guide]
 - glTF icon assigned to imported glTF assets, `GltfAsset*` components and and various setting classes
 - (Import) Support for up to 8 UV sets (note: glTF shaders still support only two sets; part of #206)
 - `IMaterialGenerator` was extended with support for points topology
-- (Export) `GameObjectExportSettings.disabledComponents` to explicitely enable export of disabled components (e.g. `MeshRenderer`, `Camera`, or `Light`)
-- (Export) `ExportSettings.componentMask` to include or exclude components from export based on type
-- (Export) `GameObjectExportSettings.layerMask` to include or exclude GameObjects from export based on their layer
+- (Export) `GameObjectExportSettings.DisabledComponents` to explicitely enable export of disabled components (e.g. `MeshRenderer`, `Camera`, or `Light`)
+- (Export) `ExportSettings.ComponentMask` to include or exclude components from export based on type
+- (Export) `GameObjectExportSettings.LayerMask` to include or exclude GameObjects from export based on their layer
 - (Import) Async instantiation methods. This helps to ensure a stable frame rate when loading bigger glTF scenes (#205)
+- `GltfGlobals` is public now
+- `GameObjectInstantiator.SceneTransform` is public now
 ### Changed
+- The API was changed considerably to conform closer to Unity's coding standard and the Microsoft's Framework Design Guidelines. Some notable items:
+  - PascalCase on properties
+  - Removed direct access to fields
+  - More consistent naming of assemblies, namespaces, classes, constants, static members, etc.
+  - Removed majority of Rider code analysis warnings and suggestions
 - Converted a lot of unintentionally public classes, types and properties to internal ones
 - Replaced `CollectingLogger.item` with `.Count` and `.Items` iterator
 - Moved logging related code into `GLTFast.Logging` namespace
 - Renamed `Schema.RootChild` to `Schema.NamedObject` and made it abstract
 - Converted  `GameObjectInstantiator.Settings` to `InstantiationSettings`
-- Removed `RenderPipelineUtils.DetectRenderPipeline` in favor of `RenderPipelineUtils.renderPipeline`
+- Removed `RenderPipelineUtils.DetectRenderPipeline` in favor of `RenderPipelineUtils.RenderPipeline`
 - Additional methods/properties (e.g. from class `GameObjectInstantiator`) are virtual, so they can be overriden
 - `GltfImport` implements `IDisposable` now (#194)
 - Support for PNG/Jpeg textures (via built-in packages *Unity Web Request Texture* and *Image Conversion*) is now optional (#321)
@@ -52,27 +80,57 @@ This release contains multiple breaking changes. Please read the [upgrade guide]
 - (Import) Deprecated existing, sync instantiation methods in favor of new async ones
 - KTX textures load much smoother thanks to bumping KtxUnity to 1.3.0 or 2.2.1
 - Sped up loading of external KTX textures by avoid making a redundant memory copy.
-- `IDownload` does not derive from `IEnumartor` anymore
+- `IDownload` does not derive from `IEnumertor` anymore
 - (Import) Successfully tested mesh primitive draw mode `lines` and removed error message about it being untested
-- (Export) Disabled components (e.g. `MeshRenderer`, `Camera`, or `Light`) are not exported by default (see also: new `GameObjectExportSettings.disabledComponents` setting to get old behavior)
+- (Export) Disabled components (e.g. `MeshRenderer`, `Camera`, or `Light`) are not exported by default (see also: new `GameObjectExportSettings.DisabledComponents` setting to get old behavior)
 - (Export) GameObjects with tag `EditorOnly` (including children) don't get exported (similar to building a scene)
 - Added optional `CancellationToken` parameter to async import/export methods. This is preparation work for proper cancellation. Does not work as expected just yet.
+- Refactored Assembly Definitions
+  - `glTFastSchema` was merged into `glTFast` and thus removed
+  - `glTFastEditor` was renamed to `glTFast.Editor`
+  - `glTFastEditorTests` was renamed to `glTFast.Editor.Tests`
+- `GltfAsset.FullUrl` is public now (convenient for some tests)
+- `IInstantiator` changes
+  - `IInstantiator.BeginScene` signature dropped third parameter `AnimationClip[] animationClips` that was depending on built-in Animation module to be enabled.
+  - `IInstantiator.AddAnimation` was added. Only available when built-in Animation module is enabled.
+- Converted properties that were hiding conversion logic or caching into methods
+  - `Accessor`: `typeEnum` to `GetAttributeType`/`SetAttributeType`
+  - `BufferView`: `modeEnum` to `GetMode`
+  - `BufferView`: `filterEnum` to `GetFilter`
+  - `AnimationChannelTarget`: `pathEnum` to `GetPath`
+  - `AnimationSampler`: `interpolationEnum` to `GetInterpolationType`
+  - `Camera`: `typeEnum` to `GetCameraType`/`SetCameraType`
+  - `LightPunctual`: `typeEnum` to `GetLightType`/`SetLightType`
+  - `Material`: `alphaModeEnum` to `GetAlphaMode`/`SetAlphaMode`
+- Moved some nested classes into dedicated files and up the namespace hierarchy
+  - `GameObjectInstantiator.SceneInstance` is now `GameObjectSceneInstance`
+  - `ImportSettings.NameImportMethod` is now `NameImportMethod`
+  - `InstantiationSettings.SceneObjectCreation` is now `SceneObjectCreation`
+- `HttpHeader`'s properties are readonly now. A constructor was added as compensation.
 ### Removed
 - Obsolete code
   - `GltfImport.Destroy` (was renamed to `GltfImport.Dispose`)
   - `GLTFast.GltFast` (was renamed to `GltfImport`)
   - `GltfImport.InstantiateGltf` (was replaced by `InstantiateMainScene` and `InstantiateScene`)
-  - `GltfImport.Destroy` (was renamed to `Dispose`)
   - Remains of Basis Universal extension draft state
     - `Schema.Image.extensions`
     - `Schema.Image.ImageExtension`
     - `Schema.Image.ImageKtx2`
 ### Fixed
 - Shader graphs' BaseColor, BaseColorTexture and vertex color calculations are now in correct color space
-- Export MeshRenderer wherre number of materials does not match number of submeshes (thanks [Dan Dando ][DanDovi] for #428)
+- Export MeshRenderer where number of materials does not match number of submeshes (thanks [Dan Dando ][DanDovi] for #428)
 - Shaders and shader graphs now have a proper main color and main texture assigned (except legacy shader graphs where this is not supported)
 - No more redundant default (fallback) materials are being generated
 - (JSON parsing) Potential NPDR when just one of many node extensions is present (#464)
+- (Import) Draco meshes are correctly named (#527)
+- (Import) Gracefully fallback to loading textures from byte arrays if UnityWebRequestTexture module is not enabled and trigger a warning.
+- (Import) `GltfBoundsAsset.Load` properly passes on the logger now.
+- (Import) Exception upon loading a file that uses the `KHR_animation_pointer` extension.
+
+## [4.9.1] - 2022-11-28
+### Changed
+- (Import) An `Animator` component is added to the scene root GameObject when Mecanim is used as animation method (thanks [@hybridherbst][hybridherbst] for #519). This is convenient at design-time and a preparation for Playable API support.
+- (Import) Frame rate improvement when using Draco compression (thanks [@hybridherbst][hybridherbst] for #520).
 
 ## [4.9.0] - 2022-11-11
 ### Added
@@ -140,6 +198,7 @@ This release contains multiple breaking changes. Please read the [upgrade guide]
 - `GltfAssetBase.Dispose` for releasing resources
 ### Changed
 - Mecanim (non-legacy) is now the default for importing animation clips at design-time (thanks [@hybridherbst][hybridherbst] for #388)
+- Mipmaps are generated by default now when importing at design-time (thanks [@hybridherbst][hybridherbst] for #388)
 - All four bone weights are imported at design-time, regardless of quality setting
 - SkinnedMeshRenderer's rootBone property is now set to the lowest common ancestor node of all joints. This enables future culling optimization (see #301)
 ### Fixed
